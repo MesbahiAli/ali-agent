@@ -1,45 +1,53 @@
 import pyttsx3
 import json
+import random
 from datetime import datetime
 
-# Load user data
+# === Load data ===
 with open('./data.json') as file:
     data = json.load(file)
 
-streak = data["streak"]
+with open('./quotes.json') as file:
+    quotes = json.load(file)
 
-# Setup voice engine
+streak = data["streak"]
+today_quote = random.choice(quotes)
+
+# === Setup voice ===
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('rate', 175)
 engine.setProperty('voice', voices[1].id)
 
-# Get today's date for display
-today = datetime.today().strftime("%A, %B %d, %Y")
+# === Dates ===
+today_display = datetime.today().strftime("%A, %B %d, %Y")
+today_compare = datetime.today().strftime("%Y-%m-%d")
 
-# Greeting
-greeting = f"Hello Mr Ali, today is {today}. You are currently on a {streak} day streak. Keep going."
+# === Greeting ===
+greeting = f"Hello Mr Ali, today is {today_display}. You are currently on a {streak} day streak."
 print(greeting)
 engine.say(greeting)
+
+# === Motivation quote ===
+quote_message = f"Ali, your quote for today is. {today_quote}"
+print(quote_message)
+engine.say(quote_message)
+
+# === Daily check-in ===
+
+question_text = "Did you complete your coding session today?"
+engine.say(question_text)
 engine.runAndWait()
 
-# Ask the user
-answer = input("Did you code today? (y/n): ").lower()
+answer = input("Type y or n: ").lower()
 
-# Get today as comparable string
-today_string = datetime.today().strftime("%Y-%m-%d")
-
-# Handle answer
 if answer == "y":
-    if today_string != data["last_date"]:
+    if today_compare != data["last_date"]:
         data["streak"] += 1
-        data["last_date"] = today_string
-        
+        data["last_date"] = today_compare
         with open('./data.json', 'w') as file:
             json.dump(data, file)
-        
-        new_streak = data["streak"]
-        final_message = f"Amazing! Streak updated to {new_streak} days. See you tomorrow Ali."
+        final_message = f"Amazing! Streak updated to {data['streak']} days. See you tomorrow Ali."
     else:
         final_message = "You already confirmed today. Rest well."
 elif answer == "n":
@@ -47,7 +55,6 @@ elif answer == "n":
 else:
     final_message = "Please answer with y or n next time."
 
-# Speak final
 print(final_message)
 engine.say(final_message)
 engine.runAndWait()
